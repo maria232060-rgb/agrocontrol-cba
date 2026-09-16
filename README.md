@@ -43,25 +43,17 @@ agrocontrol_cba/
 - Las modificaciones se guardan inmediatamente en JSON.
 - Los movimientos y ventas usan identificadores secuenciales.
 
-## Casos de prueba
+## Almacenamiento de datos
 
-PF001: registrar dos veces P001 y comprobar que el segundo registro sea rechazado.
+El sistema utiliza archivos JSON para almacenar la información de productos, lotes, movimientos de inventario y ventas.
 
-PF002: ingresar precio 0 o texto y comprobar que se solicite un valor válido.
+Los archivos utilizados son:
 
-PF003: intentar cosechar un lote inexistente.
+- productos.json
+- lotes.json
+- movimientos.json
+- ventas.json
 
-PF004: cosechar dos veces el mismo lote.
-
-PF005: intentar sacar más unidades de las disponibles.
-
-PF006: realizar una venta válida con stock suficiente.
-
-PF007: realizar una venta con mínimo dos productos.
-
-PF008: cerrar el programa, ejecutarlo nuevamente y comprobar que los datos continúan.
-
-PF009: dejar el stock menor o igual al mínimo y consultar alertas.
 
 ## Git y GitHub
 
@@ -97,3 +89,25 @@ Para GitHub, crea un repositorio llamado `agrocontrol-cba`, relaciónalo con el 
 
 ## Autora
 María José Solano Rojas
+
+
+
+## Casos de prueba
+
+PF001: registrar dos veces P001 y comprobar que el segundo registro sea rechazado.
+
+PF002: ingresar precio 0 o texto y comprobar que se solicite un valor válido.
+
+PF003: intentar cosechar un lote inexistente.
+
+PF004: cosechar dos veces el mismo lote.
+
+PF005: intentar sacar más unidades de las disponibles.
+
+PF006: realizar una venta válida con stock suficiente.
+
+PF007: realizar una venta con mínimo dos productos.
+
+PF008: cerrar el programa, ejecutarlo nuevamente y comprobar que los datos continúan.
+
+PF009: dejar el stock menor o igual al mínimo y consultar alertas.
