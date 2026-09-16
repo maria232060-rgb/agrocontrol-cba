@@ -1,1 +1,10 @@
-[]
+[
+    {
+        "id_lote": "L001",
+        "producto_codigo": "P001",
+        "fecha_siembra": "2026-08-15",
+        "area_m2": 120.0,
+        "cantidad_producida": 30,
+        "estado": "COSECHADO"
+    }
+]

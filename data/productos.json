@@ -1,1 +1,29 @@
-[]
+[
+    {
+        "codigo": "P001",
+        "nombre": "Lechuga crespa",
+        "categoria": "Hortalizas",
+        "unidad": "Unidad",
+        "precio": 3500.0,
+        "stock_minimo": 10,
+        "activo": true
+    },
+    {
+        "codigo": "P002",
+        "nombre": "Maiz",
+        "categoria": "Granos",
+        "unidad": "12",
+        "precio": 558.0,
+        "stock_minimo": 55,
+        "activo": true
+    },
+    {
+        "codigo": "P003",
+        "nombre": "Tomate",
+        "categoria": "Hortalizas",
+        "unidad": "Unidad",
+        "precio": 2500.0,
+        "stock_minimo": 5,
+        "activo": true
+    }
+]
