@@ -454,5 +454,109 @@ def gestion_inventario(datos):
         else:
             print("Opción inválida.")
 
+def registrar_venta(datos):
+    print("\n--- REGISTRAR VENTA ---")
+    if not any(p["activo"] for p in datos["productos"]): return print("No hay productos activos.")
+    items = []
+    while True:
+        listar_productos(datos)
+        codigo = input("Código del producto (ENTER para terminar): ").strip().upper()
+        if not codigo: break
+        p = producto_por_codigo(datos, codigo)
+        if not p or not p["activo"]:
+            print("Producto inexistente o inactivo.")
+            continue
+        cant = leer_numero("Cantidad: ", int, 1)
+        ya = next((i for i in items if i["codigo"] == codigo), None)
+        cant_tot = cant + (ya["cantidad"] if ya else 0)
+        stk = stock_producto(datos, codigo)
+        if cant_tot > stk:
+            print(f"Stock insuficiente. Disponible: {stk}.")
+            continue
+        if ya:
+            ya["cantidad"] = cant_tot
+            ya["subtotal"] = cant_tot * ya["precio_unitario"]
+        else:
+            items.append({"codigo": codigo, "cantidad": cant, "precio_unitario": p["precio"], "subtotal": cant * p["precio"]})
+        if not confirmar("¿Agregar otro producto?"): break
+
+    if not items: return print("La venta debe contener al menos un ítem válido.")
+    if any(item["cantidad"] > stock_producto(datos, item["codigo"]) for item in items):
+        return print("La venta no puede registrarse porque el stock cambió.")
+
+    total = sum(i["subtotal"] for i in items)
+    venta = {"id": siguiente_id(datos["ventas"], "V"), "fecha": ahora(), "items": items, "total": total}
+    datos["ventas"].append(venta)
+    for i in items:
+        datos["movimientos"].append({"id": siguiente_id(datos["movimientos"], "M"), "producto_codigo": i["codigo"],
+                                     "tipo": "SALIDA", "cantidad": i["cantidad"], "motivo": f"Venta {venta['id']}", "fecha": ahora()})
+    guardar_datos(datos)
+    print(f"Venta {venta['id']} registrada. Total: ${total:,.0f}")
+
+def consultar_ventas(datos):
+    print("\n--- VENTAS ---")
+    if not datos["ventas"]: return print("No hay ventas registradas.")
+    for v in datos["ventas"]:
+        print(f"\n{v['id']} | {v['fecha']} | Total: ${v['total']:,.0f}")
+        for i in v["items"]:
+            print(f"  {i['codigo']} x{i['cantidad']} @ ${i['precio_unitario']:,.0f} = ${i['subtotal']:,.0f}")
+
+def alertas_stock(datos):
+    print("\n--- ALERTAS DE STOCK ---")
+    alertas = [(p, stock_producto(datos, p["codigo"])) for p in datos["productos"] if p["activo"] and stock_producto(datos, p["codigo"]) <= p["stock_minimo"]]
+    if not alertas: return print("No hay productos en alerta.")
+    for p, stk in alertas:
+        print(f"{p['codigo']} | {p['nombre']} | Stock: {stk} | Mínimo: {p['stock_minimo']}")
+
+def reportes(datos):
+    print("\n--- REPORTES ---\n\nEXISTENCIAS Y VALOR DEL INVENTARIO")
+    val_tot = sum(stock_producto(datos, p["codigo"]) * p["precio"] for p in datos["productos"] if p["activo"])
+    for p in datos["productos"]:
+        if p["activo"]:
+            stk = stock_producto(datos, p["codigo"])
+            print(f"{p['codigo']} | {p['nombre']} | Stock: {stk} | Valor: ${stk * p['precio']:,.0f}")
+    print(f"Valor total del inventario: ${val_tot:,.0f}")
+
+    uv = sum(i["cantidad"] for v in datos["ventas"] for i in v["items"])
+    ing = sum(v["total"] for v in datos["ventas"])
+    print(f"\nVENTAS\nNúmero de ventas: {len(datos['ventas'])}\nUnidades vendidas: {uv}\nIngresos acumulados: ${ing:,.0f}")
+
+    cants = {}
+    for v in datos["ventas"]:
+        for i in v["items"]: cants[i["codigo"]] = cants.get(i["codigo"], 0) + i["cantidad"]
+    rk = sorted(cants.items(), key=lambda x: x[1], reverse=True)[:3]
+    print("\nTOP 3 PRODUCTOS MÁS VENDIDOS")
+    if not rk: print("No hay ventas.")
+    else:
+        for pos, (cod, cant) in enumerate(rk, 1):
+            p = producto_por_codigo(datos, cod)
+            print(f"{pos}. {p['nombre'] if p else cod} ({cod}) - {cant} unidades")
+
+    print(f"\nLOTES\nTotal de lotes: {len(datos['lotes'])}")
+    for e in ESTADOS_LOTE:
+        print(f"{e}: {sum(1 for l in datos['lotes'] if l['estado'] == e)}")
+
+def pruebas_demo():
+    print("\nPRUEBAS MÍNIMAS SUGERIDAS\nPF001 Producto duplicado\nPF002 Precio inválido\nPF003 Lote inexistente\nPF004 Doble cosecha\nPF005 Salida excesiva\nPF006 Venta válida\nPF007 Venta múltiple\nPF008 Persistencia\nPF009 Alerta de stock\n\nEjecuta cada caso desde los menús y toma capturas como evidencia.\n")
+
+def menu_principal():
+    datos = cargar_datos()
+    guardar_datos(datos)
+    acciones = {"1": lambda: gestion_productos(datos), "2": lambda: gestion_lotes(datos),
+                "3": lambda: gestion_inventario(datos), "4": lambda: registrar_venta(datos),
+                "5": lambda: consultar_ventas(datos), "6": lambda: alertas_stock(datos),
+                "7": lambda: reportes(datos), "8": lambda: (guardar_datos(datos), print("Datos guardados correctamente.")),
+                "9": pruebas_demo}
+    while True:
+        print("\n==================== AGROCONTROL CBA ====================\n1. Gestión de productos\n2. Gestión de lotes productivos\n3. Movimientos de inventario\n4. Registrar venta\n5. Consultar ventas\n6. Alertas de stock\n7. Reportes\n8. Guardar datos\n9. Ver guía de pruebas\n0. Salir\n==========================================================")
+        o = input("Seleccione una opción: ").strip()
+        if o == "0":
+            guardar_datos(datos)
+            print("Datos guardados. Hasta luego.")
+            break
+        acciones.get(o, lambda: print("Opción inválida. Intente nuevamente."))()
+
+if __name__ == "__main__":
+    menu_principal()
 
 
