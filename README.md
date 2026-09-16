@@ -54,6 +54,12 @@ Los archivos utilizados son:
 - movimientos.json
 - ventas.json
 
+## Gestión de productos
+
+El sistema permite registrar productos con código, nombre, categoría, unidad, precio, stock mínimo y estado.
+
+Los códigos de los productos deben ser únicos y se almacenan en mayúsculas.
+
 
 ## Git y GitHub
 
